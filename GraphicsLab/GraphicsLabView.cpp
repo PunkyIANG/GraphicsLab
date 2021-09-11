@@ -101,7 +101,7 @@ void CGraphicsLabView::OnDraw(CDC* pDC)
 		// get all values
 		int valueCount = (int)((b - a) / step) + 1;
 		double *customResults = new double[valueCount];
-		double* baseResults = new double[valueCount];
+		double *baseResults = new double[valueCount];
 
 		double maxY;
 		double minY;
