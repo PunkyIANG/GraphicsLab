@@ -14,6 +14,9 @@
 #include "GraphicsLabView.h"
 
 #include "math.h"
+#include <iostream>
+#include <fstream>
+#include <string>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -43,8 +46,8 @@ const bool useFixedLimits = true;
 
 const int gridInterval = 25;
 
-const double a = -3;
-const double b = 5;
+const double a = -3.05;
+const double b = 5.06;
 const double step = 0.1;
 
 
@@ -97,6 +100,7 @@ void CGraphicsLabView::OnDraw(CDC* pDC)
 	if (!pDoc)
 		return;
 
+
 	if (useFixedLimits) {
 		// get all values
 		int valueCount = (int)((b - a) / step) + 1;
@@ -106,11 +110,21 @@ void CGraphicsLabView::OnDraw(CDC* pDC)
 		double maxY;
 		double minY;
 
+		
+		std::ofstream fullFile, customFile;
+		fullFile.open("C:\\Users\\Professional\\Desktop\\fullFile.txt");
+		customFile.open("C:\\Users\\Professional\\Desktop\\customFile.txt");
 
 		for (int i = 0; i < valueCount; i++) {
 			double x = a + i * step;
+			char sep = ',';
 			customResults[i] = OtherCustomSinX(x, epsilon);
 			baseResults[i] = sin(x) / x;
+
+			fullFile << x << sep << customResults[i] << sep
+				<< baseResults[i] << sep << epsilon << '\n';
+			customFile << x << sep << customResults[i] << '\n';
+
 
 			double tempMax = max(customResults[i], baseResults[i]);
 			double tempMin = min(customResults[i], baseResults[i]);
@@ -126,11 +140,19 @@ void CGraphicsLabView::OnDraw(CDC* pDC)
 			}
 		}
 
+		fullFile.close();
+		customFile.close();
+
+
 		CRect rcClient;
 		GetClientRect(rcClient);
 		auto center = rcClient.CenterPoint();
 		auto width = rcClient.Width();
 		auto height = rcClient.Height();
+
+		CFont mainFont;
+		mainFont.CreatePointFont(120, L"Consolas", pDC);
+		pDC->SelectObject(&mainFont);
 
 		if (maxY * minY < 0) {
 			pDC->MoveTo(0,                NumToCoordY(0, minY, maxY, height));
@@ -161,8 +183,13 @@ void CGraphicsLabView::OnDraw(CDC* pDC)
 			}
 			else {
 				// draw as usual
-				pDC->MoveTo(xPos, NumToCoordY(0, minY, maxY, height) - gridLineLength);
-				pDC->LineTo(xPos, NumToCoordY(0, minY, maxY, height) + gridLineLength + 1);
+				int yPos = NumToCoordY(0, minY, maxY, height);
+				pDC->MoveTo(xPos, yPos - gridLineLength);
+				pDC->LineTo(xPos, yPos + gridLineLength + 1);
+
+				char const* num_char = std::to_string(i).c_str();
+
+				pDC->TextOut(xPos, yPos + gridLineLength + 3, num_char, 10);
 			}
 		}
 
@@ -185,6 +212,7 @@ void CGraphicsLabView::OnDraw(CDC* pDC)
 				// draw as usual
 				pDC->MoveTo(NumToCoordX(0, a, b, width) - gridLineLength,	  yPos);
 				pDC->LineTo(NumToCoordX(0, a, b, width) + gridLineLength + 1, yPos);
+
 			}
 		}
 
@@ -200,20 +228,9 @@ void CGraphicsLabView::OnDraw(CDC* pDC)
 
 		}
 
-		/*
-		for (int i = 0; i < rcClient.Width(); i++) {
-			double x = (double)(i - center.x) / gridInterval;
-
-			if (x != 0) {
-				double y = OtherCustomSinX(x, epsilon);
-				pDC->LineTo(i, -(y * gridInterval) + center.y);
-
-				y = sin(x) / x;
-				pDC->SetPixel(i, -(y * gridInterval) + center.y, RGB(255, 0, 0));
-			}
-		}
-
-		*/
+		delete[] customResults;
+		delete[] baseResults;
+		
 	}
 	else {
 		CRect rcClient;
