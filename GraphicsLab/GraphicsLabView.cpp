@@ -42,9 +42,9 @@ uint64_t* factorialCache;
 
 const double epsilon = 0.01;
 const int gridLineLength = 2;
-const bool useFixedLimits = true;
+const bool useFixedLimits = false;
 
-const int gridInterval = 25;
+const int gridInterval = 80;
 
 const double a = -3.05;
 const double b = 5.06;
@@ -110,6 +110,10 @@ void CGraphicsLabView::OnDraw(CDC* pDC)
 		double maxY;
 		double minY;
 
+		CFont mainFont;
+		mainFont.CreatePointFont(120, L"Consolas", pDC);
+		pDC->SelectObject(&mainFont);
+
 		
 		std::ofstream fullFile, customFile;
 		fullFile.open("C:\\Users\\Professional\\Desktop\\fullFile.txt");
@@ -150,9 +154,6 @@ void CGraphicsLabView::OnDraw(CDC* pDC)
 		auto width = rcClient.Width();
 		auto height = rcClient.Height();
 
-		CFont mainFont;
-		mainFont.CreatePointFont(120, L"Consolas", pDC);
-		pDC->SelectObject(&mainFont);
 
 		if (maxY * minY < 0) {
 			pDC->MoveTo(0,                NumToCoordY(0, minY, maxY, height));
@@ -175,11 +176,19 @@ void CGraphicsLabView::OnDraw(CDC* pDC)
 				// draw grid at lower window limit
 				pDC->MoveTo(xPos, height - gridLineLength);
 				pDC->LineTo(xPos, height + 1);
+
+				CString gnum;
+				gnum.Format(_T("%d"), i);
+				pDC->TextOutW(xPos, height - gridLineLength - 3, gnum);
 			}
 			else if (maxY < 0) {
 				// draw grid at upper window limit
 				pDC->MoveTo(xPos, 0);
 				pDC->LineTo(xPos, gridLineLength + 1);
+
+				CString gnum;
+				gnum.Format(_T("%d"), i);
+				pDC->TextOutW(xPos, gridLineLength + 3, gnum);
 			}
 			else {
 				// draw as usual
@@ -187,12 +196,14 @@ void CGraphicsLabView::OnDraw(CDC* pDC)
 				pDC->MoveTo(xPos, yPos - gridLineLength);
 				pDC->LineTo(xPos, yPos + gridLineLength + 1);
 
-				char const* num_char = std::to_string(i).c_str();
 
-				pDC->TextOut(xPos, yPos + gridLineLength + 3, num_char, 10);
+				CString gnum;
+				gnum.Format(_T("%d"), i);
+				pDC->TextOutW(xPos, yPos + gridLineLength + 3, gnum);
 			}
 		}
 
+		
 		firstGridLine = floor(minY);
 		lastGridLine = ceil(maxY);
 
@@ -202,19 +213,41 @@ void CGraphicsLabView::OnDraw(CDC* pDC)
 				// draw grid at left window limit
 				pDC->MoveTo(0,					yPos);
 				pDC->LineTo(gridLineLength + 1, yPos);
+
+
+				if (i != 0) {
+					CString gnum;
+					gnum.Format(_T("%d"), i);
+					pDC->TextOutW(gridLineLength + 3, yPos, gnum);
+				}
 			}
 			else if (b < 0) {
 				// draw grid at right window limit
 				pDC->MoveTo(width - gridLineLength, yPos);
 				pDC->LineTo(width + 1,				yPos);
+
+				if (i != 0) {
+					CString gnum;
+					gnum.Format(_T("%d"), i);
+					pDC->TextOutW(width - gridLineLength - 3, yPos, gnum);
+				}
 			}
 			else {
 				// draw as usual
+				int xPos = NumToCoordX(0, a, b, width);
+
 				pDC->MoveTo(NumToCoordX(0, a, b, width) - gridLineLength,	  yPos);
 				pDC->LineTo(NumToCoordX(0, a, b, width) + gridLineLength + 1, yPos);
 
+
+				if (i != 0) {
+					CString gnum;
+					gnum.Format(_T("%d"), i);
+					pDC->TextOutW(xPos - gridLineLength - 3, yPos, gnum);
+				}
 			}
 		}
+		
 
 		CPen redPen(PS_SOLID, 1, RGB(0, 255, 0));
 		pDC->SelectObject(&redPen);
@@ -225,7 +258,6 @@ void CGraphicsLabView::OnDraw(CDC* pDC)
 		for (int i = 0; i < valueCount; i++) {
 			pDC->LineTo(NumToCoordX(a + i * step, a, b, width), NumToCoordY(customResults[i], minY, maxY, height));
 			pDC->SetPixel(NumToCoordX(a + i * step, a, b, width), NumToCoordY(baseResults[i], minY, maxY, height), RGB(255, 0, 0));
-
 		}
 
 		delete[] customResults;
@@ -249,8 +281,17 @@ void CGraphicsLabView::OnDraw(CDC* pDC)
 			pDC->MoveTo(center.x + gridInterval * i, center.y - gridLineLength);
 			pDC->LineTo(center.x + gridInterval * i, center.y + gridLineLength + 1);
 
+			CString gnum;
+			gnum.Format(_T("%d"), i);
+			pDC->TextOutW(center.x + gridInterval * i, center.y + gridLineLength + 3, gnum);
+
+
 			pDC->MoveTo(center.x - gridInterval * i, center.y - gridLineLength);
 			pDC->LineTo(center.x - gridInterval * i, center.y + gridLineLength + 1);
+
+			CString minusgnum;
+			minusgnum.Format(_T("%d"), -i);
+			pDC->TextOutW(center.x - gridInterval * i, center.y + gridLineLength + 3, minusgnum);
 		}
 
 		int yGridLines = center.y / gridInterval;
@@ -259,8 +300,17 @@ void CGraphicsLabView::OnDraw(CDC* pDC)
 			pDC->MoveTo(center.x - gridLineLength, center.y + gridInterval * i);
 			pDC->LineTo(center.x + gridLineLength + 1, center.y + gridInterval * i);
 
+			CString gnum;
+			gnum.Format(_T("%d"), -i);
+			pDC->TextOutW(center.x + gridLineLength + 3, center.y + gridInterval * i, gnum);
+
+
 			pDC->MoveTo(center.x - gridLineLength, center.y - gridInterval * i);
 			pDC->LineTo(center.x + gridLineLength + 1, center.y - gridInterval * i);
+
+			CString minusgnum;
+			minusgnum.Format(_T("%d"), i);
+			pDC->TextOutW(center.x + gridLineLength + 3, center.y - gridInterval * i, minusgnum);
 		}
 
 		CPen redPen(PS_SOLID, 1, RGB(0, 255, 0));
@@ -269,17 +319,39 @@ void CGraphicsLabView::OnDraw(CDC* pDC)
 		double prevValue = OtherCustomSinX((double)center.x / gridInterval, 0.01);
 		pDC->MoveTo(0, -(prevValue * gridInterval) + center.y);
 
+
+		// get all values
+		double* customResults = new double[rcClient.Width()];
+		double* baseResults = new double[rcClient.Width()];
+
+		std::ofstream fullFile, customFile;
+		fullFile.open("C:\\Users\\Professional\\Desktop\\fullFile.txt");
+		customFile.open("C:\\Users\\Professional\\Desktop\\customFile.txt");
+
+
+		char sep = ',';
+
+
 		for (int i = 0; i < rcClient.Width(); i++) {
 			double x = (double)(i - center.x) / gridInterval;
 
 			if (x != 0) {
 				double y = OtherCustomSinX(x, epsilon);
+				customResults[i] = y;
 				pDC->LineTo(i, -(y * gridInterval) + center.y);
 
 				y = sin(x) / x;
+				baseResults[i] = y;
 				pDC->SetPixel(i, -(y * gridInterval) + center.y, RGB(255, 0, 0));
+
+				fullFile << x << sep << customResults[i] << sep
+					<< baseResults[i] << sep << epsilon << '\n';
+				customFile << x << sep << customResults[i] << '\n';
 			}
 		}
+
+		fullFile.close();
+		customFile.close();
 	}
 }
 
